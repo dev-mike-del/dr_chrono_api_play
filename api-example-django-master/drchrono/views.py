@@ -2,7 +2,10 @@ from django.shortcuts import redirect
 from django.views.generic import TemplateView
 from social_django.models import UserSocialAuth
 
-from drchrono.endpoints import DoctorEndpoint
+from drchrono.endpoints import (
+    DoctorEndpoint,
+    PatientEndpoint,
+    )
 
 
 class SetupView(TemplateView):
@@ -51,7 +54,7 @@ class Patients(TemplateView):
     """
     The doctor can see what appointments they have today.
     """
-    template_name = 'patient_welcome.html'
+    template_name = 'patients.html'
 
     def get_token(self):
         """
@@ -69,13 +72,13 @@ class Patients(TemplateView):
         """
         # We can create an instance of an endpoint resource class, and use it to fetch details
         access_token = self.get_token()
-        api = endpoints.PatientEndpoint(access_token)
+        api = PatientEndpoint(access_token)
         # Grab the first doctor from the list; normally this would be the whole practice group, but your hackathon
         # account probably only has one doctor in it.
         return api.list()
 
     def get_context_data(self, **kwargs):
-        kwargs = super(PatientWelcome, self).get_context_data(**kwargs)
+        kwargs = super(Patients, self).get_context_data(**kwargs)
         # Hit the API using one of the endpoints just to prove that we can
         # If this works, then your oAuth setup is working correctly.
         patients = self.make_api_request()
