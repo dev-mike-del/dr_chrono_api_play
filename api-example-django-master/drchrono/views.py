@@ -47,7 +47,7 @@ class DoctorWelcome(TemplateView):
         kwargs['doctor'] = doctor_details
         return kwargs
 
-class PatientWelcome(TemplateView):
+class Patients(TemplateView):
     """
     The doctor can see what appointments they have today.
     """
