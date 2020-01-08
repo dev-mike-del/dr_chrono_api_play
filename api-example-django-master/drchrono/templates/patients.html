@@ -8,6 +8,7 @@
 <h1>Patients Page</h1>
 	{% for patient in patients %}
 		<h3>{{ patient.first_name }} {{ patient.last_name }}</h3>
+		<p>{{ patient.id }}</p>
 	{% endfor %}
 </body>
 </html>

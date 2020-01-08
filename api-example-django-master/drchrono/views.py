@@ -108,7 +108,7 @@ class Patient(TemplateView):
         """
         # We can create an instance of an endpoint resource class, and use it to fetch details
         access_token = self.get_token()
-        api = endpoints.PatientEndpoint(access_token).fetch(self.kwargs['id'])
+        api = PatientEndpoint(access_token).fetch(self.kwargs['id'])
         # Grab the first doctor from the list; normally this would be the whole practice group, but your hackathon
         # account probably only has one doctor in it.
         return api

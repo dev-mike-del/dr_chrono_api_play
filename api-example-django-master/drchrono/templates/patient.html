@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Welcome to drchrono</title>
+</head>
+<body>
+		<ul>
+				<li>
+					First Name: {{patient.first_name}}
+				</li>
+				<li>
+					Last Name: {{ patient.last_name }}
+				</li>
+				<li>
+					Doctor: {{patient.doctor}}
+				</li>
+				<li>
+					Address: {{patient.address}}
+				</li>
+				<li>
+					Zip: {{patient.zip}}
+				</li>
+				<li>
+					City: {{patient.city}}
+				</li>
+				<li>
+					State: {{patient.state}}
+				</li>
+		</ul>
+
+		<ul>
+		{% for x,y in patient.items %}
+			<li>{{x}}: {{y}}</li>
+		{% endfor %}
+		</ul>
+
+</body>
+</html>
