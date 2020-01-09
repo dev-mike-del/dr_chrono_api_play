@@ -1,4 +1,6 @@
+from django.http import HttpResponseRedirect
 from django.shortcuts import redirect
+from django.urls import reverse
 from django.views.generic import TemplateView, FormView
 from social_django.models import UserSocialAuth
 
@@ -202,8 +204,10 @@ class PatientUpdate(TemplateView, FormView):
         del data['_state']
         del data['id']
         clean_date = data
-        endpoints.PatientEndpoint(
-            access_token).update(id=self.kwargs['id'], data=clean_date)
+        PatientEndpoint(access_token).update(
+            id=self.kwargs['id'], 
+            data=clean_date
+            )
 
         models.Patient.objects.filter(
             patient_id=self.kwargs['id']).update(**patient_form.__dict__)
