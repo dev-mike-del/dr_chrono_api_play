@@ -276,3 +276,40 @@ class Appointments(TemplateView):
 
         kwargs['appointments'] = appointments_list
         return kwargs
+
+
+class AppointmentSearch(Appointments, FormView):
+    """
+    The doctor can see what appointments they have today.
+    """
+    template_name = 'appointment_search.html'
+    form_class = forms.AppointmentSearchForm
+
+    def form_valid(self, form):
+        form = self.request.POST
+        access_token = self.get_token()
+        appointments = self.make_api_request()
+        appointments_list = []
+        for appointment in appointments:
+            api = endpoints.PatientEndpoint(access_token).fetch(appointment['patient'])
+            appointment[u'first_name'] = api[u'first_name']
+            appointment[u'last_name'] = api[u'last_name']
+            appointment[u'social_security_number'] = api[u'social_security_number']
+            appointment = convert(appointment)
+            appointments_list.append(appointment)
+
+        patient = models.Patient.objects.get(
+            social_security_number=form['social_security_number'])
+
+        for appointment in appointments_list:
+            if (appointment['first_name'] == form['first_name'] and
+                appointment['last_name'] == form['last_name'] and
+                appointment['social_security_number'] == form['social_security_number']):
+
+                return HttpResponseRedirect(reverse('patient',kwargs={
+                    'id': patient.patient_id})
+                )
+            else:
+                return HttpResponseRedirect(reverse('appointment_search',)
+                )
+

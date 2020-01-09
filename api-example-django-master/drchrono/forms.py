@@ -70,7 +70,8 @@ class PatientForm(forms.ModelForm):
 
 
 
-class AppointmentSearchForm(forms.ModelForm):
+class AppointmentSearchForm(forms.Form):
     """docstring for AppointmentSearch"""
     first_name = forms.CharField(max_length=300)
     last_name = forms.CharField(max_length=300)
+    social_security_number = forms.CharField(max_length=300)
