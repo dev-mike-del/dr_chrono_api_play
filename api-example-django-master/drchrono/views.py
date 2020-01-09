@@ -267,16 +267,34 @@ class Appointments(TemplateView):
         appointments_list = []
 
         for appointment in appointments:
-            api = endpoints.PatientEndpoint(access_token).fetch(appointment['patient'])
-            appointment[u'first_name'] = api[u'first_name']
-            appointment[u'last_name'] = api[u'last_name']
+            patient = endpoints.PatientEndpoint(access_token).fetch(appointment['patient'])
+            appointment[u'first_name'] = patient[u'first_name']
+            appointment[u'last_name'] = patient[u'last_name']
             appointment = convert(appointment)
             appointments_list.append(appointment)
+
+            shared_fields = {}
+            if models.Patient.objects.filter(patient_id=patient['id']).exists():
+                for field in models.Patient._meta.get_fields():
+                    if field.name in patient:
+                        if field.name == 'id':
+                            shared_fields['patient_id'] = patient['id']
+                        else:
+                            shared_fields[field.name] = patient[field.name]
+                models.Patient.objects.filter(
+                patient_id=patient['id']).update(**shared_fields)
+            else:
+                for field in models.Patient._meta.get_fields():
+                    if field.name in patient:
+                        if field.name == 'id':
+                            shared_fields['patient_id'] = patient['id']
+                        else:
+                            shared_fields[field.name] = patient[field.name]
+                models.Patient.objects.create(**shared_fields)
 
 
         kwargs['appointments'] = appointments_list
         return kwargs
-
 
 class AppointmentSearch(Appointments, FormView):
     """
@@ -287,6 +305,7 @@ class AppointmentSearch(Appointments, FormView):
 
     def form_valid(self, form):
         form = self.request.POST
+        form = convert(form)
         access_token = self.get_token()
         appointments = self.make_api_request()
         appointments_list = []
@@ -302,14 +321,12 @@ class AppointmentSearch(Appointments, FormView):
             social_security_number=form['social_security_number'])
 
         for appointment in appointments_list:
-            if (appointment['first_name'] == form['first_name'] and
-                appointment['last_name'] == form['last_name'] and
-                appointment['social_security_number'] == form['social_security_number']):
-
+            if (appointment['social_security_number'] == form['social_security_number'] and
+                appointment['first_name'] == form['first_name'] and
+                appointment['last_name'] == form['last_name']):
                 return HttpResponseRedirect(reverse('patient',kwargs={
                     'id': patient.patient_id})
                 )
-            else:
-                return HttpResponseRedirect(reverse('appointment_search',)
-                )
+                
+        return HttpResponseRedirect(reverse('appointment_search'))
 
