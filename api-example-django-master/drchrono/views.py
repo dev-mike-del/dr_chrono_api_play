@@ -6,7 +6,7 @@ from drchrono.endpoints import (
     DoctorEndpoint,
     PatientEndpoint,
     )
-from drchrono import models
+from drchrono import forms, models
 
 
 class SetupView(TemplateView):
