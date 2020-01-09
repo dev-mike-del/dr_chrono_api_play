@@ -1,3 +1,7 @@
+import collections
+
+from datetime import date
+
 from django.http import HttpResponseRedirect
 from django.shortcuts import redirect
 from django.urls import reverse
@@ -5,6 +9,17 @@ from django.views.generic import TemplateView, FormView
 from social_django.models import UserSocialAuth
 
 from drchrono import endpoints, forms, models
+
+
+def convert(data):
+    if isinstance(data, basestring):
+        return str(data)
+    elif isinstance(data, collections.Mapping):
+        return dict(map(convert, data.iteritems()))
+    elif isinstance(data, collections.Iterable):
+        return type(data)(map(convert, data))
+    else:
+        return data
 
 
 class SetupView(TemplateView):
@@ -244,20 +259,20 @@ class Appointments(TemplateView):
         return api
 
     def get_context_data(self, **kwargs):
-        kwargs = super(Appointment, self).get_context_data(**kwargs)
+        kwargs = super(Appointments, self).get_context_data(**kwargs)
         # Hit the API using one of the endpoints just to prove that we can
         # If this works, then your oAuth setup is working correctly.
         access_token = self.get_token()
         appointments = self.make_api_request()
-        case = {}
+        appointments_list = []
 
         for appointment in appointments:
-            appointment['first_name'] = ''
-            appointment['last_name'] = ''
             api = endpoints.PatientEndpoint(access_token).fetch(appointment['patient'])
-            appointment['first_name'] = api.first_name
-            appointment['last_name'] = api.last_name
+            appointment[u'first_name'] = api[u'first_name']
+            appointment[u'last_name'] = api[u'last_name']
+            appointment = convert(appointment)
+            appointments_list.append(appointment)
 
 
-        kwargs['appointments'] = appointments
+        kwargs['appointments'] = appointments_list
         return kwargs

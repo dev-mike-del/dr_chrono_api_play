@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Welcome to drchrono Appointment</title>
+</head>
+<body>
+	{% for appointment_dict in appointments %}
+		<h1>{{ appointment_dict.first_name }} {{ appointment_dict.last_name }}</h1>
+		{% for key,value in appointment_dict.items %}
+			<p>{{key}}: {{value}}</p>
+		{% endfor %}
+	{% endfor %}
+
+</body>
+</html>
