@@ -6,6 +6,7 @@ from drchrono.endpoints import (
     DoctorEndpoint,
     PatientEndpoint,
     )
+from drchrono import models
 
 
 class SetupView(TemplateView):
@@ -118,23 +119,25 @@ class Patient(TemplateView):
         # Hit the API using one of the endpoints just to prove that we can
         # If this works, then your oAuth setup is working correctly.
         patient = self.make_api_request()
-        # shared_fields = {}
-        # if models.Patient.objects.filter(patient_id=patient['id']).exists():
-        #     for field in models.Patient._meta.get_fields():
-        #         if field.name in patient:
-        #             if field.name == 'id':
-        #                 shared_fields['patient_id'] = patient['id']
-        #             else:
-        #                 shared_fields[field.name] = patient[field.name]
-        #     models.Patient.objects.filter(
-        #     patient_id=self.kwargs['id']).update(**shared_fields)
-        # else:
-        #     for field in models.Patient._meta.get_fields():
-        #         if field.name in patient:
-        #             if field.name == 'id':
-        #                 shared_fields['patient_id'] = patient['id']
-        #             else:
-        #                 shared_fields[field.name] = patient[field.name]
-        #     models.Patient.objects.create(**shared_fields)
+
+        shared_fields = {}
+        if models.Patient.objects.filter(patient_id=patient['id']).exists():
+            for field in models.Patient._meta.get_fields():
+                if field.name in patient:
+                    if field.name == 'id':
+                        shared_fields['patient_id'] = patient['id']
+                    else:
+                        shared_fields[field.name] = patient[field.name]
+            models.Patient.objects.filter(
+            patient_id=self.kwargs['id']).update(**shared_fields)
+        else:
+            for field in models.Patient._meta.get_fields():
+                if field.name in patient:
+                    if field.name == 'id':
+                        shared_fields['patient_id'] = patient['id']
+                    else:
+                        shared_fields[field.name] = patient[field.name]
+            models.Patient.objects.create(**shared_fields)
+
         kwargs['patient'] = patient
         return kwargs
