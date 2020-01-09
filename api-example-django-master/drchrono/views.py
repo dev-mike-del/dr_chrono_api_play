@@ -4,11 +4,7 @@ from django.urls import reverse
 from django.views.generic import TemplateView, FormView
 from social_django.models import UserSocialAuth
 
-from drchrono.endpoints import (
-    DoctorEndpoint,
-    PatientEndpoint,
-    )
-from drchrono import forms, models
+from drchrono import endpoints, forms, models
 
 
 class SetupView(TemplateView):
@@ -40,7 +36,7 @@ class DoctorWelcome(TemplateView):
         """
         # We can create an instance of an endpoint resource class, and use it to fetch details
         access_token = self.get_token()
-        api = DoctorEndpoint(access_token)
+        api = endpoints.DoctorEndpoint(access_token)
         # Grab the first doctor from the list; normally this would be the whole practice group, but your hackathon
         # account probably only has one doctor in it.
         return next(api.list())
@@ -75,7 +71,7 @@ class Patients(TemplateView):
         """
         # We can create an instance of an endpoint resource class, and use it to fetch details
         access_token = self.get_token()
-        api = PatientEndpoint(access_token)
+        api = endpoints.PatientEndpoint(access_token)
         # Grab the first doctor from the list; normally this would be the whole practice group, but your hackathon
         # account probably only has one doctor in it.
         return api.list()
@@ -111,7 +107,7 @@ class Patient(TemplateView):
         """
         # We can create an instance of an endpoint resource class, and use it to fetch details
         access_token = self.get_token()
-        api = PatientEndpoint(access_token).fetch(self.kwargs['id'])
+        api = endpoints.PatientEndpoint(access_token).fetch(self.kwargs['id'])
         # Grab the first doctor from the list; normally this would be the whole practice group, but your hackathon
         # account probably only has one doctor in it.
         return api
@@ -204,7 +200,7 @@ class PatientUpdate(TemplateView, FormView):
         del data['_state']
         del data['id']
         clean_date = data
-        PatientEndpoint(access_token).update(
+        endpoints.PatientEndpoint(access_token).update(
             id=self.kwargs['id'], 
             data=clean_date
             )
@@ -218,3 +214,50 @@ class PatientUpdate(TemplateView, FormView):
               kwargs={'id': patient_form.patient_id}
               )
           )
+
+
+class Appointments(TemplateView):
+    """
+    The doctor can see what appointments they have today.
+    """
+    template_name = 'appointments.html'
+
+    def get_token(self):
+        """
+        Social Auth module is configured to store our access tokens. This dark magic will fetch it for us if we've
+        already signed in.
+        """
+        oauth_provider = UserSocialAuth.objects.get(provider='drchrono')
+        access_token = oauth_provider.extra_data['access_token']
+        return access_token
+
+    def make_api_request(self):
+        """
+        Use the token we have stored in the DB to make an API request and get doctor details. If this succeeds, we've
+        proved that the OAuth setup is working
+        """
+        # We can create an instance of an endpoint resource class, and use it to fetch details
+        access_token = self.get_token()
+        api = endpoints.AppointmentEndpoint(access_token).list(date=date.today())
+        # Grab the first doctor from the list; normally this would be the whole practice group, but your hackathon
+        # account probably only has one doctor in it.
+        return api
+
+    def get_context_data(self, **kwargs):
+        kwargs = super(Appointment, self).get_context_data(**kwargs)
+        # Hit the API using one of the endpoints just to prove that we can
+        # If this works, then your oAuth setup is working correctly.
+        access_token = self.get_token()
+        appointments = self.make_api_request()
+        case = {}
+
+        for appointment in appointments:
+            appointment['first_name'] = ''
+            appointment['last_name'] = ''
+            api = endpoints.PatientEndpoint(access_token).fetch(appointment['patient'])
+            appointment['first_name'] = api.first_name
+            appointment['last_name'] = api.last_name
+
+
+        kwargs['appointments'] = appointments
+        return kwargs
