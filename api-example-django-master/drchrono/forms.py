@@ -69,3 +69,8 @@ class PatientForm(forms.ModelForm):
         fields = '__all__'
 
 
+
+class AppointmentSearchForm(forms.ModelForm):
+    """docstring for AppointmentSearch"""
+    first_name = forms.CharField(max_length=300)
+    last_name = forms.CharField(max_length=300)
