@@ -7,9 +7,13 @@
 <body>
 	{% for appointment_dict in appointments %}
 		<h1>{{ appointment_dict.first_name }} {{ appointment_dict.last_name }}</h1>
-		{% for key,value in appointment_dict.items %}
-			<p>{{key}}: {{value}}</p>
-		{% endfor %}
+		<ul>
+			<li>Status: {{ appointment_dict.status }}</li>
+			<li>Schedule Time: {{ appointment_dict.scheduled_time }}</li>
+			<li>Exam Room: {{ appointment_dict.exam_room }}</li>
+			<li>Reason: {{ appointment_dict.reason }}</li>
+			<li>Notes: {{ appointment_dict.notes }}</li>
+		</ul>
 	{% endfor %}
 
 </body>
