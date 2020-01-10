@@ -250,11 +250,12 @@ class PatientUpdate(TemplateView, FormView):
           )
 
 
-class Appointments(TemplateView):
+class Appointments(TemplateView, FormView):
     """
     The doctor can see what appointments they have today.
     """
     template_name = 'appointments.html'
+    form_class = forms.AppointmentInSession
 
     def get_token(self):
         """
@@ -311,9 +312,22 @@ class Appointments(TemplateView):
                             shared_fields[field.name] = patient[field.name]
                 models.Patient.objects.create(**shared_fields)
 
-
         kwargs['appointments'] = appointments_list
         return kwargs
+
+    def form_valid(self, form):
+        if "submit" in self.request.POST:
+            patient_id = self.request.POST.get('patient_id', None)
+            appointment_id = self.request.POST.get('appointment_id', None)
+            access_token = self.get_token()
+            
+            endpoints.AppointmentEndpoint(access_token).update(id=appointment_id, data={'status':'In Session'})
+
+            return HttpResponseRedirect(
+              reverse(
+                  'appointments',
+                  )
+              )
 
 class AppointmentSearch(Appointments, FormView):
     """
