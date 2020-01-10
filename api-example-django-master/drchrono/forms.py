@@ -80,3 +80,8 @@ class AppointmentSearchForm(forms.Form):
 class AppointmentCheckIn(forms.Form):
     """docstring for AppointmentSearch"""
     check_in = forms.BooleanField()
+
+
+class AppointmentInSession(forms.Form):
+    """docstring for AppointmentSearch"""
+    btn = forms.CharField()
