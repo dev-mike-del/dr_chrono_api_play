@@ -75,3 +75,8 @@ class AppointmentSearchForm(forms.Form):
     first_name = forms.CharField(max_length=300)
     last_name = forms.CharField(max_length=300)
     social_security_number = forms.CharField(max_length=300)
+
+
+class AppointmentCheckIn(forms.Form):
+    """docstring for AppointmentSearch"""
+    check_in = forms.BooleanField()

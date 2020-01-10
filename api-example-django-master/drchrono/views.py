@@ -100,11 +100,12 @@ class Patients(TemplateView):
         return kwargs
 
 
-class Patient(TemplateView):
+class Patient(TemplateView, FormView):
     """
     The doctor can see what appointments they have today.
     """
     template_name = 'patient.html'
+    form_class = forms.AppointmentCheckIn
 
     def get_token(self):
         """
@@ -132,6 +133,7 @@ class Patient(TemplateView):
         # Hit the API using one of the endpoints just to prove that we can
         # If this works, then your oAuth setup is working correctly.
         patient = self.make_api_request()
+        patient = convert(patient)\
 
         shared_fields = {}
         if models.Patient.objects.filter(patient_id=patient['id']).exists():
@@ -154,6 +156,23 @@ class Patient(TemplateView):
 
         kwargs['patient'] = patient
         return kwargs
+
+    def form_valid(self, form):
+        access_token = self.get_token()
+        api_patient = self.make_api_request()
+        api_appointments = endpoints.AppointmentEndpoint(access_token).list(date=date.today())
+        appointment_number = ""
+        for appointment in api_appointments:
+            if appointment['patient'] == api_patient['id']:
+                appointment_number = appointment['id']
+
+        endpoints.AppointmentEndpoint(access_token).update(id=appointment_number, data={'status':'Arrived'})
+
+        return HttpResponseRedirect(
+          reverse(
+              'appointment_search',
+              )
+          )
 
 
 class PatientUpdate(TemplateView, FormView):
