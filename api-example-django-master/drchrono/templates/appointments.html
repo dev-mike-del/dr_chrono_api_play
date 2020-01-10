@@ -13,11 +13,9 @@
 			<li>Exam Room: {{ appointment_dict.exam_room }}</li>
 			<li>Reason: {{ appointment_dict.reason }}</li>
 			<li>Notes: {{ appointment_dict.notes }}</li>
-			<li>Updated: {{ appointment_dict.updated_at|date:"Y M d G i s"  }}</li>
+			<li>Updated: {{ appointment_dict.updated_at|timesince  }}</li>
 		</ul>
-		{% for k,v in appointment_dict.items %}
-			{{k}}:{{v}}
-		{% endfor %}
+		
 		{% if appointment_dict.status != "In Session" %}
 		<form method="POST" >
 		 {% csrf_token %}

@@ -1,6 +1,6 @@
 import collections
 
-from datetime import date
+from datetime import date, datetime
 
 from django.http import HttpResponseRedirect
 from django.shortcuts import redirect
@@ -287,9 +287,12 @@ class Appointments(TemplateView, FormView):
         appointments_list = []
 
         for appointment in appointments:
-            patient = endpoints.PatientEndpoint(access_token).fetch(appointment['patient'])
+            patient = endpoints.PatientEndpoint(access_token).fetch(
+                appointment['patient'])
             appointment[u'first_name'] = patient[u'first_name']
             appointment[u'last_name'] = patient[u'last_name']
+            appointment[u'updated_at'] = datetime.strptime(
+                appointment[u'updated_at'], '%Y-%m-%dT%H:%M:%S')
             appointment = convert(appointment)
             appointments_list.append(appointment)
 
@@ -321,7 +324,8 @@ class Appointments(TemplateView, FormView):
             appointment_id = self.request.POST.get('appointment_id', None)
             access_token = self.get_token()
             
-            endpoints.AppointmentEndpoint(access_token).update(id=appointment_id, data={'status':'In Session'})
+            endpoints.AppointmentEndpoint(access_token).update(
+                id=appointment_id, data={'status':'In Session'})
 
             return HttpResponseRedirect(
               reverse(
