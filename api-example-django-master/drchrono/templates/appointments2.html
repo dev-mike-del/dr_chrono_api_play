@@ -1,0 +1,24 @@
+{% for appointment_dict in appointments %}
+	<h1>{{ appointment_dict.first_name }} {{ appointment_dict.last_name }}</h1>
+	<ul>
+		<li>Status: {{ appointment_dict.status }}</li>
+		<li>Schedule Time: {{ appointment_dict.scheduled_time }}</li>
+		<li>Exam Room: {{ appointment_dict.exam_room }}</li>
+		<li>Reason: {{ appointment_dict.reason }}</li>
+		<li>Notes: {{ appointment_dict.notes }}</li>
+		<li>Updated: {{ appointment_dict.updated_at|timesince  }}</li>
+	</ul>
+
+	{% if appointment_dict.status != "In Session" %}
+	<form method="POST" >
+	 {% csrf_token %}
+	 	{{ form.as_p}}
+	 	<input name="patient_id" type="hidden" value={{appointment_dict.patient}}>
+	 	<input name="appointment_id" type="hidden" value={{appointment_dict.id}}>
+	 	<input name="submit" type="submit" value="Submit">
+
+
+
+	</form>
+	{% endif %}
+{% endfor %}

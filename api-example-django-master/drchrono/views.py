@@ -3,7 +3,7 @@ import collections
 from datetime import date, datetime
 
 from django.http import HttpResponseRedirect
-from django.shortcuts import redirect
+from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.views.generic import TemplateView, FormView
 from social_django.models import UserSocialAuth
@@ -133,7 +133,7 @@ class Patient(TemplateView, FormView):
         # Hit the API using one of the endpoints just to prove that we can
         # If this works, then your oAuth setup is working correctly.
         patient = self.make_api_request()
-        patient = convert(patient)\
+        patient = convert(patient)
 
         shared_fields = {}
         if models.Patient.objects.filter(patient_id=patient['id']).exists():
@@ -332,6 +332,50 @@ class Appointments(TemplateView, FormView):
                   'appointments',
                   )
               )
+
+
+def appointments(request):
+    oauth_provider = UserSocialAuth.objects.get(provider='drchrono')
+    access_token = oauth_provider.extra_data['access_token']
+    appointments = endpoints.AppointmentEndpoint(access_token).list(date=date.today())
+    appointments_list = []
+
+    for appointment in appointments:
+        patient = endpoints.PatientEndpoint(access_token).fetch(
+            appointment['patient'])
+        appointment[u'first_name'] = patient[u'first_name']
+        appointment[u'last_name'] = patient[u'last_name']
+        appointment[u'updated_at'] = datetime.strptime(
+            appointment[u'updated_at'], '%Y-%m-%dT%H:%M:%S')
+        appointment = convert(appointment)
+        appointments_list.append(appointment)
+
+        shared_fields = {}
+        if models.Patient.objects.filter(patient_id=patient['id']).exists():
+            for field in models.Patient._meta.get_fields():
+                if field.name in patient:
+                    if field.name == 'id':
+                        shared_fields['patient_id'] = patient['id']
+                    else:
+                        shared_fields[field.name] = patient[field.name]
+            models.Patient.objects.filter(
+            patient_id=patient['id']).update(**shared_fields)
+        else:
+            for field in models.Patient._meta.get_fields():
+                if field.name in patient:
+                    if field.name == 'id':
+                        shared_fields['patient_id'] = patient['id']
+                    else:
+                        shared_fields[field.name] = patient[field.name]
+            models.Patient.objects.create(**shared_fields)
+
+    appointments = appointments_list
+
+
+    return render(request, 'appointments2.html', {'appointments': appointments})
+
+
+
 
 class AppointmentSearch(Appointments, FormView):
     """

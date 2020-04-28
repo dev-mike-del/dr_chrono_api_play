@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>Welcome to drchrono Appointment</title>
 </head>
-<body>
+<body id="_appendHere">
 	{% for appointment_dict in appointments %}
 		<h1>{{ appointment_dict.first_name }} {{ appointment_dict.last_name }}</h1>
 		<ul>
@@ -15,7 +15,7 @@
 			<li>Notes: {{ appointment_dict.notes }}</li>
 			<li>Updated: {{ appointment_dict.updated_at|timesince  }}</li>
 		</ul>
-		
+
 		{% if appointment_dict.status != "In Session" %}
 		<form method="POST" >
 		 {% csrf_token %}
@@ -31,4 +31,20 @@
 	{% endfor %}
 
 </body>
+<script
+  src="https://code.jquery.com/jquery-3.4.1.js"
+  integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU="
+  crossorigin="anonymous"></script>
+<script>
+    setInterval(function() {
+        $.ajax({
+            type: "GET",
+            url: {% url 'appointments2' %},
+            dataType: "html"
+        })
+        .done(function(response) {
+            $('#_appendHere').append(response);
+        });
+    }, 10000)
+</script>
 </html>
